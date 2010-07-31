@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>Sticky List</title>
+  <script type="text/javascript" src="http://ajax.microsoft.com/ajax/jquery/jquery-1.4.2.min.js"></script>
+  <script type="text/javascript" src="http://use.typekit.com/wbf3vsw.js"></script>
+  <script type="text/javascript">
+
+  //Placeholder plugin
+  (function($){
+  $.fn.placeholder = function(){    
+
+    if(!supports_input_placeholder()) {
+   
+      this.each(function(i) {
+          if($(this).val() === ''){
+            $(this).val($(this).attr('placeholder'))
+            $(this).css({color: '#CCCCCC'})
+          }
+          //check whether already the placeholder event is binded
+          else if($(this).val() === $(this).attr('placeholder'))
+            return false;
+
+          $(this).bind('focusin focusout', function(event) {
+            if(event.type == 'focusout' && $(this).val() === ''){
+              $(this).val($(this).attr('placeholder'));
+              $(this).css({color: '#CCCCCC'})
+            }
+            else if($(this).val() === $(this).attr('placeholder')){
+              $(this).val('');
+              $(this).css({color: '#000'})
+            }
+          });
+
+      });
+      }
+  }
+
+  function supports_input_placeholder() {
+    var i = document.createElement('input');
+    return 'placeholder' in i;
+  }
+  })(jQuery);
+
+  var saveList = function(list){ localStorage.setItem("Sticky:list", JSON.stringify(list));};
+  var loadList = function(){ return JSON.parse(localStorage.getItem("Sticky:list") || "[]"); }
+
+  $(function(){
+    var list = $.grep(loadList(), function(a){ return a != ""});
+
+    //list current items
+    var refreshList = function(){
+      $("ul").html("");
+      if(list.length > 0) {
+        $.each(list, function(i){
+        var cur_item = this;
+        //parse links
+        var url_patt = /https?:\/\/([-\w\.]+)+(:\d+)?(\/([\w/_\.]*(\?\S+)?)?)?/;
+        cur_item = cur_item.replace(url_patt, "<a href=''$&>$&</a>");
+        
+        if(cur_item)
+          $("ul").append("<li data-item-id='" + i + "'><span style='float:left'>"+ cur_item +"</span><a href='#' class='remove_item'>✔</a></li>");
+        });
+       }
+      else
+      $("ul").append("<li><strong>Sticky List Zero!</strong> You might be having a great day! <br/><p>(Or didn't start filling the list yet? Type something below and hit return!)</p></li>");
+    }
+
+    //add new item
+    $("form").submit(function(){
+      list.push($("#new_entry").val());
+      saveList(list);
+      $("#new_entry").val("");
+      refreshList();
+      return false;
+    });
+
+    //remove item
+    $(".remove_item").live("click", function(){
+        $(this).parent().slideUp(200, function(){ 
+         $(this).remove();
+         list.splice(parseInt($(this).attr('data-item-id')), 1);
+         saveList(list);
+         refreshList();
+        });
+        return false    
+    });
+
+    //sort items
+    $("li").live("dblclick", function(){
+        var new_line = "<li data-item-id='"+ $(this).attr('data-item-id') + "'>" + $(this).html() + "</li>";
+        if($(this).prev().length > 0){
+          list[parseInt($(this).prev().attr('data-item-id'))] = $(this).children("span").text();
+          list[parseInt($(this).attr('data-item-id'))] = $(this).prev().children("span").text();
+          $(this).prev().before(new_line);
+        }
+        else{
+          list.splice(0,1);
+          list.push($(this).children("span").text());
+          $(this).parent().append(new_line);
+        }
+        saveList(list);
+        $(this).remove();  
+    });
+
+    $("li").live("mouseenter", function(){
+       $(this).children(".remove_item").show(); 
+    });
+    $("li").live("mouseleave", function(){
+       $(this).children(".remove_item").hide(); 
+    });
+
+    //after loading
+    refreshList();
+    $("input").placeholder();
+
+  });
+  </script>
+  <script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+  <style>
+    body { background: #E7F8DD; margin:0; padding:0; width: 100%; font-family: Georgia, serif;} 
+    h1, h2 {text-align: center; width: 80%;}
+    ul { list-style:none; margin:0 20px; padding:0; }
+    li { padding: 10px; border-bottom: 1px #6F806C solid; cursor: pointer; float:left; width: 80%; font-size: 110%;}
+    form {width: 80%;}
+    input { font-size: 110%; margin: 0 auto; width: 95%; min-width: 100px; padding: 5px;}
+    p { font-size: 75%;}
+
+    #wrapper { min-height: 100%; position: relative; }
+    .content { margin: 0 auto; width: 50%; min-width: 280px; }
+    #maincontent { overflow: auto; margin-bottom: 120px;}
+    #footer { background: #807373; width: 100%; margin: 0 auto; padding: 20px; min-height: 45px; height: 5%; position: fixed; bottom:0;} 
+    #footer p { color: #ECE8E8;}
+    #footer p a, #footer p a:visited { color: #ECE8E8;}
+
+    .remove_item { display:none; margin: 0 10px; float: right; height: 16px; width: 16px; text-decoration: none; color: #000; }
+    .remove_item:visited {color: #000; }
+  </style>
+
+</head>
+<body>
+  <div id="wrapper">
+    <div class ="content" id="maincontent">
+      <h1>Sticky List</h1>
+      <ul>
+      </ul>
+    </div>
+    <div id="footer">
+      <div class="content">
+        <form>
+          <input id="new_entry" type="text" value="" placeholder="Add new item to the list"/>
+        </form>
+        <p>Tip: You can double-click on an item to move it up on the list.</p>
+        <p>By <a href="http://laktek.com">Lakshan Perera</a></p>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
