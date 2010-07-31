@@ -72,8 +72,8 @@
   $(function(){
     var list = $.grep(loadList(), function(a){ return a != ""});
 
-    //list current items
-    var refreshList = function(){
+    //print list items
+    var printList = function(){
       $("ul").html("");
       if(list.length > 0) {
         $.each(list, function(i){
@@ -88,14 +88,22 @@
        }
       else
       $("ul").append("<li><strong>Sticky List Zero!</strong> You might be having a great day! <br/><p>(Or didn't start filling the list yet? Type something below and hit return!)</p></li>");
-    }
+    };
+    
+    //refresh the items in the list
+    var refreshList = function(){
+      list = [];
+      $("ul li").each(function(i){
+         list[i] = $(this).children('span').text();
+      });
+    };
 
     //add new item
     $("form").submit(function(){
       list.push($("#new_entry").val());
       saveList(list);
       $("#new_entry").val("");
-      refreshList();
+      printList();
       return false;
     });
 
@@ -103,9 +111,9 @@
     $(".remove_item").live("click", function(){
         $(this).parent().slideUp(200, function(){ 
          $(this).remove();
-         list.splice(parseInt($(this).attr('data-item-id')), 1);
+         refreshList(); 
+         printList();
          saveList(list);
-         refreshList();
         });
         return false    
     });
@@ -114,17 +122,14 @@
     $("li").live("dblclick", function(){
         var new_line = "<li data-item-id='"+ $(this).attr('data-item-id') + "'>" + $(this).html() + "</li>";
         if($(this).prev().length > 0){
-          list[parseInt($(this).prev().attr('data-item-id'))] = $(this).children("span").text();
-          list[parseInt($(this).attr('data-item-id'))] = $(this).prev().children("span").text();
           $(this).prev().before(new_line);
         }
         else{
-          list.splice(0,1);
-          list.push($(this).children("span").text());
           $(this).parent().append(new_line);
         }
-        saveList(list);
         $(this).remove();  
+        refreshList(); 
+        saveList(list);
     });
 
     $("li").live("mouseenter", function(){
@@ -135,25 +140,26 @@
     });
 
     //after loading
-    refreshList();
-    $("input").placeholder();
+    printList();
+    $("input").val("")
+              .placeholder();
 
   });
   </script>
   <script type="text/javascript">try{Typekit.load();}catch(e){}</script>
   <style>
-    body { background: #E7F8DD; margin:0; padding:0; width: 100%; font-family: Georgia, serif;} 
-    h1, h2 {text-align: center; width: 80%;}
-    ul { list-style:none; margin:0 20px; padding:0; }
-    li { padding: 10px; border-bottom: 1px #6F806C solid; cursor: pointer; float:left; width: 80%; font-size: 110%;}
-    form {width: 80%;}
-    input { font-size: 110%; margin: 0 auto; width: 95%; min-width: 100px; padding: 5px; font-family: Georgia, serif;}
+    body { background: #E7F8DD; margin:0; padding:0; font-family: Georgia, serif;} 
+    h1, h2 { text-align: center; }
+    ul { list-style:none; margin:0; padding:0; }
+    li { margin: 0; padding: 10px 0; border-bottom: 1px #6F806C solid; cursor: pointer; float:left; width: 100%; font-size: 110%;}
+    li span { padding-left: 10px; }
+    input { font-size: 110%; margin: 0 auto; width: 100%; min-width: 100px; padding: 5px; font-family: Georgia, serif;}
     p { font-size: 75%;}
 
-    #wrapper { min-height: 100%; position: relative; }
-    .content { margin: 0 auto; width: 50%; min-width: 280px; }
+    #wrapper { min-height: 100%; position: relative; margin: 0 auto; max-width: 500px; min-width: 280px;  }
     #maincontent { overflow: auto; margin-bottom: 120px;}
-    #footer { background: #807373; width: 100%; margin: 0 auto; padding: 20px; height: 90px; position: fixed; bottom:0;} 
+    #footer { background: #807373; width: 100%; margin: 0 auto; padding: 20px 0; height: 90px; position: fixed; bottom:0;} 
+  	#footer .content { margin: 0 auto; max-width: 500px; min-width: 280px; }
     #footer p { color: #ECE8E8;}
     #footer p a, #footer p a:visited { color: #ECE8E8;}
 
@@ -169,16 +175,15 @@
       <ul>
       </ul>
     </div>
-    <div id="footer">
+  </div>
+  <div id="footer">
       <div class="content">
         <form>
           <input id="new_entry" type="text" value="" placeholder="Add new item to the list"/>
         </form>
         <p>Tip: You can double-click on an item to move it up on the list.</p>
-        <p>By <a href="http://laktek.com">Lakshan Perera</a></p>
+        <p><a href="http://laktek.com">Lakshan Perera</a></p>
       </div>
-    </div>
   </div>
-
 </body>
 </html>
