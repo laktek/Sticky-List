@@ -83,7 +83,7 @@
         cur_item = cur_item.replace(url_patt, "<a href=''$&>$&</a>");
         
         if(cur_item)
-          $("ul").append("<li data-item-id='" + i + "'><span style='float:left'>"+ cur_item +"</span><a href='#' class='remove_item'>✔</a></li>");
+          $("ul").append("<li data-item-id='" + i + "'><span style='float:left'>"+ cur_item +"</span><a href='#' class='remove_item item_actions'>✓</a><a href='#' class='move_item item_actions'>↑</a></li>");
         });
        }
       else
@@ -118,8 +118,8 @@
         return false    
     });
 
-    //sort items
-    $("li").live("dblclick", function(){
+    //move item up in priority
+    var moveItem = function(){
         var new_line = "<li data-item-id='"+ $(this).attr('data-item-id') + "'>" + $(this).html() + "</li>";
         if($(this).prev().length > 0){
           $(this).prev().before(new_line);
@@ -130,13 +130,15 @@
         $(this).remove();  
         refreshList(); 
         saveList(list);
-    });
+    };
+    $(".move_item").live("click", function(){ moveItem.call($(this).parent()); return false });
+    $("li").live("dblclick", function(){ moveItem.call(this)});
 
     $("li").live("mouseenter", function(){
-       $(this).children(".remove_item").show(); 
+       $(this).children(".item_actions").show(); 
     });
     $("li").live("mouseleave", function(){
-       $(this).children(".remove_item").hide(); 
+       $(this).children(".item_actions").hide(); 
     });
 
     //after loading
@@ -163,8 +165,8 @@
     #footer p { color: #ECE8E8;}
     #footer p a, #footer p a:visited { color: #ECE8E8;}
 
-    .remove_item { display:none; margin: 0 10px; float: right; height: 16px; width: 16px; text-decoration: none; color: #000; }
-    .remove_item:visited {color: #000; }
+    .item_actions { display:none; margin: 0 10px; float: right; height: 16px; width: 16px; text-decoration: none; color: #000; }
+    .item_actions:visited {color: #000; }
   </style>
 
 </head>
@@ -181,8 +183,8 @@
         <form>
           <input id="new_entry" type="text" value="" placeholder="Add new item to the list"/>
         </form>
-        <p>Tip: You can double-click on an item to move it up on the list.</p>
-        <p><a href="http://laktek.com">Lakshan Perera</a></p>
+        <p>Tip: You can move up an item by double-clicking on it.</p>
+        <p>By <a href="http://laktek.com">Lakshan Perera</a></p>
       </div>
   </div>
 </body>
