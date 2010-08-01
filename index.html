@@ -120,6 +120,7 @@
 
     //move item up in priority
     var moveItem = function(){
+        $(this).children(".item_actions").hide(); 
         var new_line = "<li data-item-id='"+ $(this).attr('data-item-id') + "'>" + $(this).html() + "</li>";
         if($(this).prev().length > 0){
           $(this).prev().before(new_line);
